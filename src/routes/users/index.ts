@@ -65,10 +65,15 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       const id = request.params.id;
       const user = await fastify.db.users.findOne({ key: 'id', equals: id });
       const users = await fastify.db.users.findMany({ key: 'subscribedToUserIds', inArray: id })
+      
       const newArrWithoutDeleteUser = users.map((user) => {
         user.subscribedToUserIds = user.subscribedToUserIds.filter((userId) => userId !== id);
         return user;
       });
+
+      const posts = await fastify.db.posts.findMany({ key: 'userId', equals: id });
+      posts.forEach(async (post) => await fastify.db.posts.delete(post.id));
+
       newArrWithoutDeleteUser.forEach(async (user) => await fastify.db.users.change(user.id, user))
       if (user) {
         return await fastify.db.users.delete(id);
@@ -111,6 +116,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       const deleteSubscribeUserId = request.params.id;
       const id = request.body; 
       const user = await fastify.db.users.findOne({ key: 'id', equals: id.userId });
+
       if (user) {
         const userUnsubscribe = user.subscribedToUserIds.find((userId) => userId === deleteSubscribeUserId);
         if (userUnsubscribe) {
