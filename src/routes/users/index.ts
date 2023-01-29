@@ -74,6 +74,9 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       const posts = await fastify.db.posts.findMany({ key: 'userId', equals: id });
       posts.forEach(async (post) => await fastify.db.posts.delete(post.id));
 
+      const profiles = await fastify.db.profiles.findMany({ key: 'userId', equals: id });
+      profiles.forEach(async (profile) => await fastify.db.profiles.delete(profile.id));
+
       newArrWithoutDeleteUser.forEach(async (user) => await fastify.db.users.change(user.id, user))
       if (user) {
         return await fastify.db.users.delete(id);
